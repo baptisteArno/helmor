@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"setup": "cp \"$HELMOR_ROOT_PATH/.env.local\" \"$HELMOR_WORKSPACE_PATH/.env.local\"\ncp -r \"$HELMOR_ROOT_PATH/sidecar/dist\" \"$HELMOR_WORKSPACE_PATH/sidecar/dist\"\nbun install",
+		"setup": "git -C \"$HELMOR_ROOT_PATH\" remote get-url upstream >/dev/null 2>&1 || git -C \"$HELMOR_ROOT_PATH\" remote add upstream https://github.com/dohooo/helmor.git\ngit -C \"$HELMOR_ROOT_PATH\" fetch --all --prune\ngit -C \"$HELMOR_ROOT_PATH\" checkout main\ngit -C \"$HELMOR_ROOT_PATH\" rebase upstream/main\ngit -C \"$HELMOR_ROOT_PATH\" push --force-with-lease origin main\ngit -C \"$HELMOR_WORKSPACE_PATH\" rebase main\ncp \"$HELMOR_ROOT_PATH/.env.local\" \"$HELMOR_WORKSPACE_PATH/.env.local\"\ncp -r \"$HELMOR_ROOT_PATH/sidecar/dist\" \"$HELMOR_WORKSPACE_PATH/sidecar/dist\"\nbun install",
 		"run": "bun run dev:analyze"
 	}
 }
