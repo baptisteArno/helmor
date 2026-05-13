@@ -745,6 +745,7 @@ function AppShell({
 		darkTheme: appSettings.darkTheme,
 		uiFontFamily: appSettings.uiFontFamily,
 		codeFontFamily: appSettings.codeFontFamily,
+		terminalFontFamily: appSettings.terminalFontFamily,
 		chatFontSize: appSettings.chatFontSize,
 		usePointerCursors: appSettings.usePointerCursors,
 	});
