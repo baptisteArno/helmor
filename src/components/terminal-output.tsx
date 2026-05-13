@@ -51,6 +51,8 @@ export type TerminalHandle = {
 
 const URL_PATTERN = /https?:\/\/[^\s<>"'`]+/gi;
 const TRAILING_URL_PUNCTUATION = /[),.;:!?]+$/;
+const DEFAULT_TERMINAL_FONT_FAMILY =
+	"'GeistMono', 'SF Mono', Monaco, Menlo, monospace";
 
 function sanitizeHttpUrl(value: string): string | null {
 	const trimmed = value.replace(TRAILING_URL_PUNCTUATION, "");
@@ -224,12 +226,9 @@ function resolveTerminalTheme(): ITheme {
 function resolveTerminalFontFamily(
 	fontFamily: string | null | undefined,
 ): string {
-	if (fontFamily && fontFamily.length > 0) return fontFamily;
-	const root = getComputedStyle(document.documentElement);
-	return (
-		root.getPropertyValue("--font-terminal").trim() ||
-		"'GeistMono', 'SF Mono', Monaco, Menlo, monospace"
-	);
+	return fontFamily && fontFamily.length > 0
+		? `${fontFamily}, ${DEFAULT_TERMINAL_FONT_FAMILY}`
+		: DEFAULT_TERMINAL_FONT_FAMILY;
 }
 
 // Memoized so parent re-renders (e.g. inspector width drag) don't push a
