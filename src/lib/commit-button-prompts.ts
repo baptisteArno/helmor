@@ -8,7 +8,7 @@ import {
 
 type ButtonActionMode = Exclude<
 	WorkspaceCommitButtonMode,
-	"push" | "merge" | "closed" | "merged"
+	"push" | "checks-running" | "merge-blocked" | "merge" | "closed" | "merged"
 >;
 type ActionSessionMode = ButtonActionMode | "review";
 
@@ -115,6 +115,10 @@ export function describeActionKind(actionKind: string): string {
 			return "Push";
 		case "resolve-conflicts":
 			return "Resolve Conflicts";
+		case "checks-running":
+			return "Checks Running";
+		case "merge-blocked":
+			return "Merge Blocked";
 		case "merge":
 			return "Merge";
 		case "open-pr":

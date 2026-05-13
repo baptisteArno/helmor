@@ -58,6 +58,8 @@ function getShortcutIdForCommitMode(
 		case "fix":
 		case "resolve-conflicts":
 			return "action.fixErrors";
+		case "checks-running":
+		case "merge-blocked":
 		case "merge":
 			return "action.mergePr";
 		default:
@@ -129,13 +131,20 @@ export function GitSectionHeader({
 	//      mergeability (`mergeable === "UNKNOWN"`). Without this cue, a
 	//      grayed-out merge button looks broken — the user can't tell whether
 	//      it's a transient sync or a permanent block.
+	//   3. Pending/running checks: the CTA stays clickable for an explicit
+	//      bypass, but the shimmer makes clear this is not the green path.
+	//   4. Branch protection blocks, such as unresolved conversations.
 	// We deliberately do NOT shimmer for:
 	//   - Background polling on stable data (would be noisy).
 	//   - Active lifecycle phases (creating/streaming/verifying) — the button
 	//     itself shows a busy spinner, additional shimmer is redundant.
 	const [forgeConnecting, setForgeConnecting] = useState(false);
 	const isComputing =
-		isRefreshing || commitButtonState === "disabled" || forgeConnecting;
+		isRefreshing ||
+		commitButtonState === "disabled" ||
+		commitButtonMode === "checks-running" ||
+		commitButtonMode === "merge-blocked" ||
+		forgeConnecting;
 	const showShimmer = useMinDisplayDuration(
 		isComputing,
 		SHIMMER_MIN_DISPLAY_MS,
@@ -285,12 +294,15 @@ export function GitSectionHeader({
 								variant="outline"
 								size="xs"
 								className={cn(
-									"self-center bg-transparent font-normal tracking-[0.01em] transition-[background-color,border-color,color,box-shadow,opacity] duration-300 ease-out hover:bg-transparent hover:opacity-80",
+									"self-center rounded-md bg-transparent font-normal tracking-[0.01em] transition-[background-color,border-color,color,box-shadow,opacity] duration-300 ease-out hover:bg-transparent hover:opacity-80",
 									(commitButtonMode === "fix" ||
+										commitButtonMode === "merge-blocked" ||
 										commitButtonMode === "closed") &&
 										"border-[var(--workspace-pr-closed-accent)] text-[var(--workspace-pr-closed-accent)] hover:text-[var(--workspace-pr-closed-accent)]",
 									commitButtonMode === "resolve-conflicts" &&
 										"border-[var(--workspace-pr-conflicts-accent)] text-[var(--workspace-pr-conflicts-accent)] hover:text-[var(--workspace-pr-conflicts-accent)]",
+									commitButtonMode === "checks-running" &&
+										"border-[var(--workspace-pr-checks-running-accent)] text-[var(--workspace-pr-checks-running-accent)] hover:text-[var(--workspace-pr-checks-running-accent)]",
 									commitButtonMode === "merge" &&
 										"border-[var(--workspace-pr-open-accent)] text-[var(--workspace-pr-open-accent)] hover:text-[var(--workspace-pr-open-accent)]",
 									commitButtonMode === "merged" &&
@@ -355,7 +367,7 @@ export function GitSectionHeader({
 								size="xs"
 								aria-label="Continue workspace"
 								className={cn(
-									"shrink-0 justify-start overflow-hidden self-center border-dashed border-[var(--workspace-pr-merged-accent)] bg-transparent px-0 font-normal text-[var(--workspace-pr-merged-accent)] transition-[background-color,border-color,color,box-shadow,opacity] duration-200 ease-out hover:bg-transparent hover:text-[var(--workspace-pr-merged-accent)] hover:opacity-80",
+									"shrink-0 justify-start overflow-hidden self-center rounded-md border-dashed border-[var(--workspace-pr-merged-accent)] bg-transparent px-0 font-normal text-[var(--workspace-pr-merged-accent)] transition-[background-color,border-color,color,box-shadow,opacity] duration-200 ease-out hover:bg-transparent hover:text-[var(--workspace-pr-merged-accent)] hover:opacity-80",
 								)}
 								style={{ width: continueWidth }}
 								disabled={isContinuingWorkspace}
@@ -384,7 +396,7 @@ export function GitSectionHeader({
 											mode={commitButtonMode}
 											state={commitButtonState}
 											changeRequestName={changeRequestName}
-											className="self-center"
+											className="self-center rounded-md"
 											onCommit={onCommit}
 										/>
 									</span>

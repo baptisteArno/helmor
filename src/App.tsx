@@ -774,6 +774,7 @@ function AppShell({
 		handleInspectorCommitAction,
 		handleInspectorReviewAction,
 		handlePendingPromptConsumed,
+		mergeConfirmDialogNode,
 		pendingPromptForSession,
 		queuePendingPromptForSession,
 	} = useWorkspaceCommitLifecycle({
@@ -1630,6 +1631,7 @@ function AppShell({
 							onSetRightSidebarMode={contextPanelActions.setMode}
 						/>
 						{closeConfirmDialog}
+						{mergeConfirmDialogNode}
 					</ComposerInsertProvider>
 				</SessionRunStatesProvider>
 			</WorkspaceToastProvider>
