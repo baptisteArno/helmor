@@ -315,6 +315,17 @@ export const SettingsDialog = memo(function SettingsDialog({
 										/>
 									</SettingsRow>
 									<SettingsRow
+										title="Expand terminals on hover"
+										description="Enlarge inspector terminals when the cursor rests over them."
+									>
+										<Switch
+											checked={settings.terminalHoverExpansion}
+											onCheckedChange={(checked) =>
+												updateSettings({ terminalHoverExpansion: checked })
+											}
+										/>
+									</SettingsRow>
+									<SettingsRow
 										title="Always show context usage"
 										description="By default, context usage is only shown when more than 70% is used."
 									>

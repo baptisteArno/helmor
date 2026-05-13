@@ -198,6 +198,8 @@ export type AppSettings = {
 	theme: ThemeMode;
 	darkTheme: DarkTheme;
 	notifications: boolean;
+	/** When true, hovering a terminal-like inspector tab body expands it. */
+	terminalHoverExpansion: boolean;
 	lastWorkspaceId: string | null;
 	lastSessionId: string | null;
 	lastSurface: AppSurface;
@@ -273,6 +275,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 	theme: "system",
 	darkTheme: "default",
 	notifications: true,
+	terminalHoverExpansion: true,
 	lastWorkspaceId: null,
 	lastSessionId: null,
 	lastSurface: "workspace",
@@ -382,6 +385,7 @@ const SETTINGS_KEY_MAP: Record<
 	chatFontSize: "app.chat_font_size",
 	usePointerCursors: "app.use_pointer_cursors",
 	notifications: "app.notifications",
+	terminalHoverExpansion: "app.terminal_hover_expansion",
 	lastWorkspaceId: "app.last_workspace_id",
 	lastSessionId: "app.last_session_id",
 	lastSurface: "app.last_surface",
@@ -835,6 +839,10 @@ export async function loadSettings(): Promise<AppSettings> {
 				raw[SETTINGS_KEY_MAP.notifications] !== undefined
 					? raw[SETTINGS_KEY_MAP.notifications] === "true"
 					: DEFAULT_SETTINGS.notifications,
+			terminalHoverExpansion:
+				raw[SETTINGS_KEY_MAP.terminalHoverExpansion] !== undefined
+					? raw[SETTINGS_KEY_MAP.terminalHoverExpansion] === "true"
+					: DEFAULT_SETTINGS.terminalHoverExpansion,
 			lastWorkspaceId: raw[SETTINGS_KEY_MAP.lastWorkspaceId] || null,
 			lastSessionId: raw[SETTINGS_KEY_MAP.lastSessionId] || null,
 			lastSurface:

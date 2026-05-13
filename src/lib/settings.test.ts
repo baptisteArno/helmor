@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	DEFAULT_KANBAN_VIEW_STATE,
@@ -5,16 +6,36 @@ import {
 	saveSettings,
 } from "./settings";
 
-const invokeMock = vi.hoisted(() => vi.fn());
+const invokeMock = vi.mocked(invoke);
 
-vi.mock("@tauri-apps/api/core", () => ({
-	invoke: invokeMock,
-}));
+function installTestLocalStorage() {
+	const store = new Map<string, string>();
+	const storage = {
+		getItem: vi.fn((key: string) => store.get(key) ?? null),
+		setItem: vi.fn((key: string, value: string) => {
+			store.set(key, value);
+		}),
+		removeItem: vi.fn((key: string) => {
+			store.delete(key);
+		}),
+		clear: vi.fn(() => {
+			store.clear();
+		}),
+	};
+	Object.defineProperty(window, "localStorage", {
+		value: storage,
+		configurable: true,
+	});
+	Object.defineProperty(globalThis, "localStorage", {
+		value: storage,
+		configurable: true,
+	});
+}
 
 describe("settings", () => {
 	beforeEach(() => {
+		installTestLocalStorage();
 		invokeMock.mockReset();
-		window.localStorage.clear();
 	});
 
 	it("hydrates kanban view state with per-repo branches and inbox filters", async () => {
@@ -118,6 +139,28 @@ describe("settings", () => {
 					"app.last_surface": "workspace",
 					"app.start_context_panel_open": "false",
 					"app.workspace_right_sidebar_mode": "inspector",
+				}),
+			}),
+		);
+	});
+
+	it("hydrates and saves terminal hover expansion", async () => {
+		invokeMock.mockResolvedValue({
+			"app.terminal_hover_expansion": "false",
+		});
+
+		const settings = await loadSettings();
+
+		expect(settings.terminalHoverExpansion).toBe(false);
+
+		invokeMock.mockResolvedValue(undefined);
+		await saveSettings({ terminalHoverExpansion: true });
+
+		expect(invokeMock).toHaveBeenLastCalledWith(
+			"update_app_settings",
+			expect.objectContaining({
+				settingsMap: expect.objectContaining({
+					"app.terminal_hover_expansion": "true",
 				}),
 			}),
 		);
