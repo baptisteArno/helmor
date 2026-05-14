@@ -198,6 +198,8 @@ export type AppSettings = {
 	theme: ThemeMode;
 	darkTheme: DarkTheme;
 	notifications: boolean;
+	/** When true, hovering a terminal-like inspector tab body expands it. */
+	terminalHoverExpansion: boolean;
 	lastWorkspaceId: string | null;
 	lastSessionId: string | null;
 	lastSurface: AppSurface;
@@ -213,14 +215,13 @@ export type AppSettings = {
 	/** Fast-mode flag for the Review helper. When null, falls back to
 	 *  `defaultFastMode`. */
 	reviewFastMode: boolean | null;
-	/** Model used when the inspector "Create PR/MR" action starts a session.
-	 *  Applies to both GitHub PRs and GitLab MRs. When null, falls back to
-	 *  `defaultModelId`. */
+	/** Model used by simple action sessions: create/reopen PR/MR and
+	 *  commit-and-push. When null, falls back to `defaultModelId`. */
 	prModelId: string | null;
-	/** Effort level for the Create PR/MR helper. When null, falls back to
+	/** Effort level for simple action sessions. When null, falls back to
 	 *  `defaultEffort`. */
 	prEffort: string | null;
-	/** Fast-mode flag for the Create PR/MR helper. When null, falls back to
+	/** Fast-mode flag for simple action sessions. When null, falls back to
 	 *  `defaultFastMode`. */
 	prFastMode: boolean | null;
 	defaultEffort: string | null;
@@ -273,6 +274,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 	theme: "system",
 	darkTheme: "default",
 	notifications: true,
+	terminalHoverExpansion: true,
 	lastWorkspaceId: null,
 	lastSessionId: null,
 	lastSurface: "workspace",
@@ -382,6 +384,7 @@ const SETTINGS_KEY_MAP: Record<
 	chatFontSize: "app.chat_font_size",
 	usePointerCursors: "app.use_pointer_cursors",
 	notifications: "app.notifications",
+	terminalHoverExpansion: "app.terminal_hover_expansion",
 	lastWorkspaceId: "app.last_workspace_id",
 	lastSessionId: "app.last_session_id",
 	lastSurface: "app.last_surface",
@@ -791,6 +794,10 @@ function readClampedInt(
 	return Math.min(max, Math.max(min, Math.round(n)));
 }
 
+function readModelId(value: string | undefined): string | null {
+	return value && value !== "" ? value : null;
+}
+
 export async function loadSettings(): Promise<AppSettings> {
 	try {
 		const raw = await invoke<Record<string, string>>("get_app_settings");
@@ -835,6 +842,10 @@ export async function loadSettings(): Promise<AppSettings> {
 				raw[SETTINGS_KEY_MAP.notifications] !== undefined
 					? raw[SETTINGS_KEY_MAP.notifications] === "true"
 					: DEFAULT_SETTINGS.notifications,
+			terminalHoverExpansion:
+				raw[SETTINGS_KEY_MAP.terminalHoverExpansion] !== undefined
+					? raw[SETTINGS_KEY_MAP.terminalHoverExpansion] === "true"
+					: DEFAULT_SETTINGS.terminalHoverExpansion,
 			lastWorkspaceId: raw[SETTINGS_KEY_MAP.lastWorkspaceId] || null,
 			lastSessionId: raw[SETTINGS_KEY_MAP.lastSessionId] || null,
 			lastSurface:
@@ -849,14 +860,8 @@ export async function loadSettings(): Promise<AppSettings> {
 				raw[SETTINGS_KEY_MAP.workspaceRightSidebarMode] === "context"
 					? "context"
 					: DEFAULT_SETTINGS.workspaceRightSidebarMode,
-			defaultModelId:
-				rawDefaultModelId && rawDefaultModelId !== "default"
-					? rawDefaultModelId
-					: DEFAULT_SETTINGS.defaultModelId,
-			reviewModelId:
-				rawReviewModelId && rawReviewModelId !== "default"
-					? rawReviewModelId
-					: DEFAULT_SETTINGS.reviewModelId,
+			defaultModelId: readModelId(rawDefaultModelId),
+			reviewModelId: readModelId(rawReviewModelId),
 			reviewEffort:
 				rawReviewEffort && rawReviewEffort !== ""
 					? rawReviewEffort
@@ -867,10 +872,7 @@ export async function loadSettings(): Promise<AppSettings> {
 					: rawReviewFastMode === "false"
 						? false
 						: DEFAULT_SETTINGS.reviewFastMode,
-			prModelId:
-				rawPrModelId && rawPrModelId !== "default"
-					? rawPrModelId
-					: DEFAULT_SETTINGS.prModelId,
+			prModelId: readModelId(rawPrModelId),
 			prEffort:
 				rawPrEffort && rawPrEffort !== ""
 					? rawPrEffort
